@@ -36,8 +36,8 @@ const userModel = {
         }
     },
     generateJWT: async (email, password) => {
-       secret_key = process.env.JWT_SECRET;
-       return jwt.sign({ email, password }, secret_key, { expiresIn: "1d" })
+      const secret_key = process.env.JWT_SECRET;
+       return jwt.sign({ email: email }, secret_key, { expiresIn: "1d" })
         
     }
 }

@@ -13,15 +13,11 @@ const User = {
               email,
               hashedPassword
             );
-            
-            
-            const token = userModel.generateJWT(email, hashedPassword);
-            console.log(token);
-            
+            const token = await userModel.generateJWT(email, hashedPassword);
             res.cookie("token", token, { maxAge: 3600000,httpOnly:true});
-            res.status(201).json({ data: token, message: "user created successfully!" });
+            res.status(201).json({ data: token , message: "user created successfully!" });
         } catch (error) {
-            res.status(400).json({ message: "Error creating a user" });
+           res.status(400).json({message:"Email already taken or user entered invalid credentials!"})
         }
     },
     Signin: async(req,res) => {
