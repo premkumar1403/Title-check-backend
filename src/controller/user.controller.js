@@ -5,39 +5,37 @@ const cookieParser = require("cookieparser")
 const User = {
     Signup: async (req,res) => {
         const { username, email, password } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 12);
         try {
-            const existance = await userModel.checkExist(email);
-            if (existance) {
-                res.status(400).json({message:"user already taken in this email"})
-            }
-        
-            const hashedPassword = bcrypt.hash(password, 12);
-            const response = await userModel.createUser(
+            
+            await userModel.createUser(
               username,
               email,
               hashedPassword
             );
-            if (!response) {
-              res
-                .status(400)
-                .json({ message: "Error occured in account creation" });
-            }
-            const token = await userModel.generateJWT(email, hashedPassword);
+            
+            
+            const token = userModel.generateJWT(email, hashedPassword);
+            console.log(token);
+            
             res.cookie("token", token, { maxAge: 3600000,httpOnly:true});
-            res.status(201).json({data:token,message:"user created successfully!"})
+            res.status(201).json({ data: token, message: "user created successfully!" });
         } catch (error) {
-            res.status(400).json({ message: "Error creating a user" }) 
+            res.status(400).json({ message: "Error creating a user" });
         }
     },
     Signin: async(req,res) => {
         const { email, password } = req.body;
-        const hashedPassword = bcrypt.hash(password, 12);
+        const hashedPassword = await bcrypt.hash(password, 12);
         try {
             const response = await userModel.signinUser(email, hashedPassword);
             if (!response) {
                 res.status(400).json({ message: "Error in user login" })
             }
-            res.status(200).json({message: "user logged in successfully!"})
+            const token=await userModel.generateJWT(email, hashedPassword);
+            res.cookie("token", token, { maxAge: 3600000, httpOnly: true });
+            res.status(200).json({ data:token,message: "user logged in successfully!" })
+            
         } catch (error) {
             res.status(400).json({message:"Error while user trying to login"})
         }
