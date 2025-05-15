@@ -1,3 +1,4 @@
+const { response } = require("express")
 const jwt = require("jsonwebtoken")
 
 const userModel = {
@@ -18,6 +19,12 @@ const userModel = {
         return new Promise((resolve,reject) => {
             
         })
+    },
+    generateJWT: async (email, password) => {
+       seret_key = process.env.JWT_SECRET;
+       return jwt.sign({ email, password }, secret_key, { expiresIn: "1d" })
+        
     }
-    
 }
+
+module.exports = userModel;

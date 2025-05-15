@@ -1,4 +1,6 @@
-const bcrypt= require("bcrypt")
+const bcrypt= require("bcrypt");
+const userModel=require("../model/user.model")
+const cookieParser = require("cookieparser")
 
 const User = {
     Signup: async (req,res) => {
@@ -8,12 +10,21 @@ const User = {
             if (existance) {
                 res.status(400).json({message:"user already taken in this email"})
             }
+        
             const hashedPassword = bcrypt.hash(password, 12);
-            const response = await userModel.createUser(username, email, hashedPassword);
+            const response = await userModel.createUser(
+              username,
+              email,
+              hashedPassword
+            );
             if (!response) {
-                res.status(400).json({ message: "Error occured in account creation" });
+              res
+                .status(400)
+                .json({ message: "Error occured in account creation" });
             }
-            res.status(201).json({message:"user created successfully!"})
+            const token = await userModel.generateJWT(email, hashedPassword);
+            res.cookie("token", token, { maxAge: 3600000,httpOnly:true});
+            res.status(201).json({data:token,message:"user created successfully!"})
         } catch (error) {
             res.status(400).json({ message: "Error creating a user" }) 
         }
