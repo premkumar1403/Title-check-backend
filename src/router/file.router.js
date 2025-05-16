@@ -1,10 +1,10 @@
 const express = require("express")
 const fileController = require("../controller/file.controller")
 const router = express.Router();
-
+const upload = require("../middleware/multer")
 
 //file uploading route
-router.post("/file-upload",fileController.createFile);
+router.post("/file-upload",upload.single("file"),fileController.createFile);
 
 //paper title_name uploading route
 router.post('/file-title', fileController.searchTitle);

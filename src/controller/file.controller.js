@@ -1,15 +1,51 @@
-const xlsx = require("xlsx")
+const XLSX = require("xlsx")
 const fileModel = require("../model/file.model")
 
 
 
 const fileController = {
+<<<<<<< HEAD
     createFile: async(req,res) => {
         
         const { Title, Author_Mail, Conference_Name, Decision_With_Comments } = req.body;
+=======
+    createFile: async (req, res) => {
+        const file = req.file.buffer;
+>>>>>>> 23e028f80ef2667eacc2561bd640a5be3d5f6f9a
         try {
-            const response_data=await fileModel.createFiled(Title, Author_Mail, Conference_Name, Decision_With_Comments);
-            res.status(201).json({ data: response_data, message: "file uploaded to database successfully!" });
+            const workbook = XLSX.read(file, { type: 'buffer' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const data = XLSX.utils.sheet_to_json(worksheet, { header: 0 });
+            const promise = new Promise((resolve, reject) => {
+                if (!data) {
+                    reject();
+                }
+                else {
+                    for (const item of data) {
+                      try {
+                        const payload = {
+                          Title: item.Title,
+                          Author_Mail: item.Author_Mail,
+                          Conference_Name: item.Conference_Name,
+                          Decision_With_Commends: item.Decision_With_Comments,
+                        };
+
+                        fileModel.createFiled(payload);
+                        resolve();
+                      } catch (error) {
+                        res
+                          .status(400)
+                          .jsn({ message: "Error uploading on data" });
+                      }
+                    }
+                }
+            })
+            
+            res.status(201).json({
+              message: "file uploaded to database successfully!",
+            });
+           
         } catch (error) {
             res.status(400).json({ message: "Error uploading files!" });
         }
