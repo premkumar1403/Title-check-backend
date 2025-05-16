@@ -7,16 +7,17 @@ const MongoDB = require("./config/db.config.js")
 const app = express()
  
 
-app.use(cors())
+app.use(cors({
+    origin: "http://localhost:5173"
+}))
 app.use(express.json())
 dotenv.config()
 MongoDB();
-const Port = process.env.Port; 
+const Port = process.env.Port || 5000;
 
 app.use("/api/v1/users",Router)
 
-app.listen(5000 || Port, () => {
-    console.log("server running on port number".rainbow, Port.cyan)
-    
+app.listen(Port, () => {
+    console.log("server running on port number".cyan, Port.cyan)
 }
 ) 
