@@ -35,9 +35,9 @@ const userModel = {
             return new Error("User is not invalid");
         }
     },
-    generateJWT: async (email, password) => {
+    generateJWT: async (email,password) => {
       const secret_key = process.env.JWT_SECRET;
-       return jwt.sign({ email: email }, secret_key, { expiresIn: "1d" })
+       return jwt.sign({ email: email ,password:password}, secret_key, { expiresIn: "1d" })
         
     }
 }
