@@ -4,8 +4,14 @@ const fileModel = require("../model/file.model")
 
 
 const fileController = {
+<<<<<<< HEAD
+    createFile: async(req,res) => {
+        
+        const { Title, Author_Mail, Conference_Name, Decision_With_Comments } = req.body;
+=======
     createFile: async (req, res) => {
         const file = req.file.buffer;
+>>>>>>> 23e028f80ef2667eacc2561bd640a5be3d5f6f9a
         try {
             const workbook = XLSX.read(file, { type: 'buffer' });
             const sheetName = workbook.SheetNames[0];
