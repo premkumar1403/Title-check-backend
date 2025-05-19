@@ -24,8 +24,13 @@ const fileModel = {
         }
     },
 
-    createFiled: async(payload) => {
+    createField: async(payload) => {
         await fileModel.checkTitleExist(payload);
+    },
+
+
+    getFiles: async() => {
+        await file.find();
     },
      
     updateField: () => {

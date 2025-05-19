@@ -25,7 +25,7 @@ const fileController = {
                           Decision_With_Commends: item.Decision_With_Comments,
                         };
 
-                        fileModel.createFiled(payload);
+                        fileModel.createField(payload);
                         resolve();
                       } catch (error) {
                         res
@@ -45,37 +45,20 @@ const fileController = {
         }
     },
 
+    getFiles: async(req,res) => {
+        try {
+            const response = await fileModel.getFiles();
+            res.status(200).json({ data: response, message: "file fetched successfully" });
+        } catch (error) {
+            res.status(400).json({message:"Error occured while fetching file"})
+        }
+    },
+
     updateField: async(req,res) => {
         
     },
 
-    searchEmail: async(req,res) => {
-        const { Author_Mail } = req.body;
-        try {
-            const response_data = await fileModel.searchEmail(Author_Mail);
-            res.status(200).json({ data: response_data, message: "Details fetched for the given mailID" });
-        } catch (error) {
-            res.status(400).message("Error fetching Details!");
-        }
-    },
+    
 
-    searchTitle: async(req,res) => {
-        const { Title } = req.body;
-        try {
-            const response_data = await fileModel.searchTitle(Title);
-            res.status(200).json({ data: response_data, message: "Details fetched successfully!" });
-        } catch (error) {
-            res.status(400).message("Error fetching Details!");
-        }
-    },
-    searchConference: async(req,res) => {
-        const { Conference_Name } = req.body;
-        try {
-            const response_data = await fileModel.searchConference(Conference_Name);
-            res.status(200).json({ data: response_data, message: "Details fetched successfully" });
-        } catch (error) {
-            res.stauts(400).json({ message: "Error fetching Details!" });
-        }
-    }
 }
 module.exports = fileController;
