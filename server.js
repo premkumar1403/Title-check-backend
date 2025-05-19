@@ -6,26 +6,21 @@ const limiter=require("./src/middleware/ratelimit.js")
 const userRouter = require("./src/router/user.router")
 const fileRouter = require("./src/router/file.router.js")
 const MongoDB = require("./config/db.config.js")
-const app = express()
+const app = express();
 
 
 app.use(cors())
 app.use(express.json())
-dotenv.config()
-MongoDB();
+dotenv.config();
+app.use(limiter);
+
 const Port = process.env.Port; 
+MongoDB();
 
 app.use("/api/v1/users", userRouter); //uesr route
 app.use("/api/v1/file", fileRouter); //file route
 
 
-<<<<<<< HEAD
-app.listen(Port, () => {
-    console.log("server running on port number".cyan, Port.cyan)
-=======
 app.listen(5000 || Port, () => {
-    console.log("server running on port number".blue, Port.cyan)
-    
->>>>>>> 23e028f80ef2667eacc2561bd640a5be3d5f6f9a
-}
-) 
+    console.log("server running on port number".cyan, Port.cyan)
+});
