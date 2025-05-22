@@ -1,5 +1,6 @@
 const XLSX = require("xlsx")
-const fileModel = require("../model/file.model")
+const fileModel = require("../model/file.model");
+const { response } = require("express");
 
 
 
@@ -13,37 +14,36 @@ createFile: async (req, res) => {
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
             const data = XLSX.utils.sheet_to_json(worksheet, { header: 0 });
-            new Promise((resolve, reject) => {
-                if (!data) {
-                    reject();
+            if (!data || data.length === 0) {
+              return null;
                 }
-                else {
-                    for (const item of data) {
-                      try {
-                        const payload = {
-                          Title: item.Title,
-                          Author_Mail: item.Author_Mail,
-                          Conference_Name: item.Conference_Name,
-                          Decision_With_Commends: item.Decision_With_Comments,
-                        };
-
-                        fileModel.createField(payload);
-                        resolve();
+              
+            else {
+                  for (const item of data) {
+                    try {
+                      const payload = {
+                        Title: item.Title,
+                        Author_Mail: item.Author_Mail,
+                        Conference_Name: item.Conference_Name,
+                        Decision_With_Commends: item.Decision_With_Comments,
+                      };
+                      const response = await fileModel.createField(payload);
+                      console.log(response.Title);
+                      
                       } catch (error) {
-                        res
-                          .status(400)
-                          .json({ message: "Error uploading on data" });
-                      }
+                      console.log("error uploading files!"+error);
                     }
-                }
-            })
-            
-            res.status(201).json({
-              message: "file uploaded to database successfully!",
-            });
+                  }
            
-        } catch (error) {
-            res.status(400).json({ message: "Error uploading files!" });
+                
+                 
+              }
+             return res.status(201).json({
+                message: "file uploaded to database successfully!",
+              });
+              
+            } catch (error) {
+           return res.status(500).json({ message: "Internal server error!" });
         }
     },
 
@@ -59,19 +59,20 @@ createFile: async (req, res) => {
               if (!data || data.length === 0) {
                 return new Error("response not found!");
           }
-          const responses = [];
+          const responses=[];
           for (const item of data) { 
                       try {
                           const payload = {
                               Title: item.Title,
                         }
                         const response = await fileModel.showFile(payload);
-                        responses.push(response);
+                        responses.push(...response);
                       } catch (error) { 
-                         res.status(400).json({message:"No files matched!"})
+                       console.log("Error occured fetching files!");
+                       
                       }
                   }
-          res.status(200).json({data:responses,message: "files fetched stuccessfully!" });
+          res.status(200).json({ data: responses,message: "files fetched stuccessfully!" });
         } catch (error) {
           res.status(500).json({ message: "Internal server Error" }); 
         }
