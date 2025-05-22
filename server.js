@@ -17,13 +17,13 @@ app.use(express.json())
 dotenv.config();
 app.use(limiter);
 
-const Port = process.env.Port; 
+const Port = process.env.PORT;
 MongoDB();
 
-app.use("/api/v1/users", userRouter); //uesr route
+app.use("/api/v1/users", userRouter); //user route
 app.use("/api/v1/file", fileRouter); //file route
 
 
-app.listen(5000 || Port, () => {
+app.listen(Port, () => {
     console.log("server running on port number".cyan, Port.cyan)
 });
