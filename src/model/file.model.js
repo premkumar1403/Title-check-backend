@@ -65,10 +65,9 @@ const fileModel = {
         }
       }
 
-     savedFile=  await existingFile.save(); //saves a file
-      
+      savedFile = await existingFile.save(); //saves a file
     } else {
-    const [newfile]= await file.create([
+      const [newfile] = await file.create([
         {
           Title,
           Author_Mail: [{ Author_Mail }],
@@ -80,15 +79,14 @@ const fileModel = {
           ],
         },
       ]);
-     savedFile = newfile;
-      
+      savedFile = newfile;
     }
     return savedFile;
   },
 
   createField: async (payload) => {
-   return await fileModel.checkTitleExist(payload);
-  }, 
+    return await fileModel.checkTitleExist(payload);
+  },
 
   showFile: async (payload) => {
     const { Title } = payload;
