@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
+const { searchTitle } = require("../controller/file.controller");
 
 const fileschema = new mongoose.Schema({
-  Title: { type: String },
+  Title: { type: String},
   Author_Mail: [{ Author_Mail: { type: String } }],
   Conference: [
     {
@@ -93,6 +94,11 @@ const fileModel = {
 
   getFile: async () => {
       return await file.find();
+  },
+
+  searchTitle: async(Title) => {
+   return await file.find({ Title: Title });  
+    
   }
 };
 
