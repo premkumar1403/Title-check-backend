@@ -17,10 +17,10 @@ const fileController = {
         for (const item of data) {
           try {
             const payload = {
-              Title: item.Title.trim().toLowerCase(),
-              Author_Mail: item.Author_Mail.trim().toLowerCase(),
-              Conference_Name: item.Conference_Name.trim().toUpperCase(),
-              Decision_With_Commends: item.Decision_With_Comments.trim().toUpperCase(),
+              Title: item.Title,
+              Author_Mail: item.Author_Mail,
+              Conference_Name: item.Conference_Name,
+              Decision_With_Commends: item.Decision_With_Commends,
             };
             
             const responses = await fileModel.createField(payload);
@@ -50,7 +50,7 @@ const fileController = {
   },
   
   searchTitle: async(req,res) => {
-    const Title = req.query.Title.toLowerCase();
+    const Title = req.query.Title;
     try {
       const response = await fileModel.searchTitle(Title);
       res.status(200).json({data:response,message:"Title matched files fetched successfully!"})
@@ -60,4 +60,5 @@ const fileController = {
   }
       
 };
+
 module.exports = fileController;

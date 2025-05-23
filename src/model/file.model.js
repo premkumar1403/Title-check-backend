@@ -68,7 +68,7 @@ const fileModel = {
         }
       }
 
-      savedFile = await existingFile.save(); //saves as a file
+      return savedFile = await existingFile.save(); //saves as a file
     } else {
       const [newfile] = await file.create([
         {
@@ -82,9 +82,9 @@ const fileModel = {
           ],
         },
       ]);
-      savedFile = newfile;
+     return newfile;
     }
-    return savedFile;
+   
   },
 
   //Record cration function
