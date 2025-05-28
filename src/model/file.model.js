@@ -23,13 +23,13 @@ const fileModel = {
     let savedFile = null;
     const existingFile = await file.findOne({ Title });
     const title_score = await file.find({ Title: { $regex: Title, $options: "i" }, });
-    for (let item of title_score) {
-      const score = stringSimilarity.compareTwoStrings(item.Title, Title);
-      if (score>0.7) {
-        console.log(`${item.Title}`,+score);
-      }
+    // for (let item of title_score) {
+    //   const score = stringSimilarity.compareTwoStrings(item.Title, Title);
+    //   if (score>0.7) {
+    //     console.log(`${item.Title}`,+score);
+    //   }
       
-    }
+    // }
     if (existingFile) {
       const authorExists = existingFile.Author_Mail.some(
         (author) => author.Author_Mail === Author_Mail

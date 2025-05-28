@@ -9,12 +9,45 @@ const fileController = {
 
     function normalizeTitle(title) {
       if (!title || typeof title !== "string") {
-        return null;
+        return res.status(400).json({success:false,message:"All fields must have valid data!"});
       } 
-      return title.replace(/\s+/g, " ").trim().toLowerCase().replace(/[-'".,:;]/g, "");
+      return title.replace(/\s+/g, " ").trim().toLowerCase().replace(/[-'"/=.,:;]/g, "");
     }
-    
-    
+    function normalizeAuthor(author) {
+      if (!author || typeof author !== "string") {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "All fields must have valid data!",
+          });
+      }
+      return author
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase()
+    }
+    function normalizeName(name) {
+      if (!name || typeof name !== "string") {
+        return res.status(400).json({
+          success: false,
+          message: "All fields must have valid data!",
+        });
+      }
+      return name.replace(/\s+/g, " ").trim().toLowerCase();
+    }
+    function normalizeCmd(cmd) {
+      if (!cmd || typeof cmd !== "string") {
+        return res.status(400).json({
+          success: false,
+          message: "All fields must have valid data!",
+        });
+      }
+      return cmd.replace(/\s+/g, " ").trim().toLowerCase();
+    }
+
+
+
     try {
       const workbook = XLSX.read(file, { type: "buffer" });
       const sheetName = workbook.SheetNames[0];
@@ -28,9 +61,9 @@ const fileController = {
           try {
             const payload = {
               Title: normalizeTitle(item.Title),
-              Author_Mail: item.Author_Mail,
-              Conference_Name: item.Conference_Name,
-              Decision_With_Commends: item.Decision_With_Commends,
+              Author_Mail: normalizeAuthor(item.Author_Mail),
+              Conference_Name: normalizeName(item.Conference_Name),
+              Decision_With_Commends: normalizeCmd(item.Decision_With_Commends),
             }; 
             const responses = await fileModel.createField(payload);
             response.push(responses);
@@ -80,11 +113,17 @@ const fileController = {
   //   }
   // },
 
+
+  //with pagination title query
   getFile: async (req, res) => {
     try {
       const { q = "", page = 1, limit = 25 } = req.query;
       
-      const searchTerm = q.trim().toLowerCase();
+      const searchTerm = q
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase()
+        .replace(/[-'".,:;]/g, "");
       const currentPage = parseInt(page);
       const itemsPerPage = parseInt(limit);
 
@@ -108,6 +147,8 @@ const fileController = {
     }
   },
 
+
+  //without pagination title query
   searchTitle: async (req, res) => {
     const title = req.query.Title?.replace(/\s+/g, " ").trim().toLowerCase();
     const normalized_title=title.replace(/[-'".,:;]/g, "");
