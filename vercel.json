@@ -7,7 +7,7 @@
         }
     ],
     "routes":[{
-        "src":"router/(.*)",
+        "src":"./router/(.*)",
         "dest":"server.js"
     }]
 }
