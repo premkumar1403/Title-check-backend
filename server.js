@@ -5,7 +5,7 @@ const color = require("colors");
 const limiter=require("./src/middleware/ratelimit.js")
 const userRouter = require("./src/router/user.router")
 const fileRouter = require("./src/router/file.router.js")
-const MongoDB = require("./config/db.config.js")
+const MongoDB = require("./config/db.config.js") 
 const app = express();
 
 

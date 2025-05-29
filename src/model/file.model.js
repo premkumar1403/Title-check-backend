@@ -8,7 +8,9 @@ const fileschema = new mongoose.Schema({
     {
       Conference_Name: { type: String},
       Decision_With_Commends: { type: String },
-    },
+      // Precheck_Commends: { type: String },
+      // Firstset_Commends:{trype:String}
+    }, 
   ],
 });
 
@@ -17,12 +19,12 @@ const file = mongoose.model("Excel", fileschema);
 const fileModel = {
   //Function checks title is exist or not
   checkTitleExist: async (payload) => {
-    const { Title, Author_Mail, Conference_Name, Decision_With_Commends } =
+    const { Title, Author_Mail, Conference_Name, Decision_With_Commends} =
       payload;
     
     let savedFile = null;
     const existingFile = await file.findOne({ Title });
-    const title_score = await file.find({ Title: { $regex: Title, $options: "i" }, });
+    // const title_score = await file.find({ Title: { $regex: Title, $options: "i" }, });
     // for (let item of title_score) {
     //   const score = stringSimilarity.compareTwoStrings(item.Title, Title);
     //   if (score>0.7) {
