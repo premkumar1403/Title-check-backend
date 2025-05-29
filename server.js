@@ -24,6 +24,10 @@ MongoDB();
 app.use("/api/v1/users", userRouter); //user route
 app.use("/api/v1/file", fileRouter); //file route
 
+app.get('/', (req,res) => {
+    res.send("server working");
+})
+
 app.listen(Port, () => {
   console.log("server running on port number".cyan, Port.cyan);
 });
