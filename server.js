@@ -32,4 +32,3 @@ app.get('/', (req,res) => {
 //   console.log("server running on port number".cyan, Port.cyan);
 // });
 
-module.exports = app;
