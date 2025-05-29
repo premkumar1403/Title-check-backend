@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
 });
  
-const User = mongoose.model("Title-check", userSchema);
+const User = mongoose.model("user", userSchema);
 const userModel = {
     checkExist: async (email) => {
         const exist = await User.findOne({email});

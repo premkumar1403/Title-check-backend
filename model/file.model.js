@@ -8,8 +8,8 @@ const fileschema = new mongoose.Schema({
     {
       Conference_Name: { type: String},
       Decision_With_Commends: { type: String },
-      // Precheck_Commends: { type: String },
-      // Firstset_Commends:{trype:String}
+      Precheck_Commends: { type: String },
+      Firstset_Commends:{type:String}
     }, 
   ],
 });
@@ -19,8 +19,14 @@ const file = mongoose.model("Excel", fileschema);
 const fileModel = {
   //Function checks title is exist or not
   checkTitleExist: async (payload) => {
-    const { Title, Author_Mail, Conference_Name, Decision_With_Commends} =
-      payload;
+    const {
+      Title,
+      Author_Mail,
+      Conference_Name,
+      Decision_With_Commends,
+      Precheck_Commends,
+      Firstset_Commends,
+    } = payload;
     
     let savedFile = null;
     const existingFile = await file.findOne({ Title });
@@ -44,15 +50,18 @@ const fileModel = {
 
         if (conferenceIndex !== -1) {
           if (Decision_With_Commends && Decision_With_Commends.trim() !== "") {
-            existingFile.Conference[conferenceIndex].Decision_With_Commends =
-              Decision_With_Commends;
+            existingFile.Conference[conferenceIndex].Decision_With_Commends = Decision_With_Commends;
+            existingFile.Conference[conferenceIndex].Precheck_Commends = Precheck_Commends;
+            existingFile.Conference[conferenceIndex].Firstset_Commends = Firstset_Commends;
           } else {
-            console.log("Empty decision — keeping old value");
+            console.log("Empty decision prechek and firstset commend — keeping old value");
           }
         } else {
           existingFile.Conference.push({
             Conference_Name,
             Decision_With_Commends,
+            Precheck_Commends,
+            Firstset_Commends
           });
         }
       } else {
@@ -64,8 +73,9 @@ const fileModel = {
 
         if (conferenceIndex !== -1) {
           if (Decision_With_Commends && Decision_With_Commends.trim() !== "") {
-            existingFile.Conference[conferenceIndex].Decision_With_Commends =
-              Decision_With_Commends;
+            existingFile.Conference[conferenceIndex].Decision_With_Commends = Decision_With_Commends;
+            existingFile.Conference[conferenceIndex].Precheck_Commends = Precheck_Commends;
+            existingFile.Conference[conferenceIndex].Firstset_Commends = Firstset_Commends;
           } else {
             console.log("Empty decision — keeping old value");
           }
@@ -73,6 +83,8 @@ const fileModel = {
           existingFile.Conference.push({
             Conference_Name,
             Decision_With_Commends,
+            Precheck_Commends,
+            Firstset_Commends
           });
         }
       }
@@ -88,6 +100,8 @@ const fileModel = {
             {
               Conference_Name,
               Decision_With_Commends,
+              Precheck_Commends,
+              Firstset_Commends
             },
           ],
         },

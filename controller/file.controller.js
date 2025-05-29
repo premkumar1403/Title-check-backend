@@ -47,6 +47,24 @@ const fileController = {
       return cmd.replace(/\s+/g, " ").trim().toLowerCase();
     }
 
+    function normalizePrecheck(precheck) {
+      if (!precheck) return "";
+      return precheck
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase()
+        .replace(/[-'"/=,:;]/g, "");
+    }
+
+    function normalizeFirstset(firstset) {
+      if (!firstset) return "";
+      return firstset
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase()
+        .replace(/[-'"/=,:;]/g, "");
+    }
+
     try {
       const workbook = XLSX.read(file, { type: "buffer" });
       const sheetName = workbook.SheetNames[0];
@@ -63,6 +81,8 @@ const fileController = {
               Author_Mail: normalizeAuthor(item.Author_Mail),
               Conference_Name: normalizeName(item.Conference_Name),
               Decision_With_Commends: normalizeCmd(item.Decision_With_Commends),
+              Precheck_Commends: normalizePrecheck(item.Precheck_Commends),
+              Firstset_Commends: normalizeFirstset(item.Firstset_Commends),
             };
             const responses = await fileModel.createField(payload);
             response.push(responses);
