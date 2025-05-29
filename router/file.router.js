@@ -10,6 +10,6 @@ router.post("/file-upload", upload.single("file"), fileController.createFile);
 router.get("/file-get", fileController.getFile);
 
 //specific Title checking route
-router.get('/file-title', fileController.searchTitle);
+router.get("/file-title", fileController.searchTitle);
 
 module.exports = router;

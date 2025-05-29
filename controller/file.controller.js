@@ -8,12 +8,10 @@ const fileController = {
 
     function normalizeTitle(title) {
       if (!title || typeof title !== "string") {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "All fields must have valid data!",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "All fields must have valid data!",
+        });
       }
       return title
         .replace(/\s+/g, " ")
