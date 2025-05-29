@@ -16,7 +16,7 @@ app.use(
 );
 app.use(express.json());
 dotenv.config();
-app.use(limiter);
+app.use(limiter); 
 
 const Port = process.env.PORT;
 MongoDB();
@@ -28,6 +28,8 @@ app.get('/', (req,res) => {
     res.send("server working");
 })
 
-app.listen(Port, () => {
-  console.log("server running on port number".cyan, Port.cyan);
-});
+// app.listen(Port, () => {
+//   console.log("server running on port number".cyan, Port.cyan);
+// });
+
+module.exports = app;
