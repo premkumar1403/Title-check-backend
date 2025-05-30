@@ -6,9 +6,11 @@ const fileController = {
     const file = req.file.buffer;
     const page_num = req.query.page || 1;
 
-    function normalizeTitle(title) {
+    function normalizeTitle(title,item) {
       if (!title || typeof title !== "string") {
-        return res.status(400).json({
+   
+        
+        return res.status(400).json({Paper_ID:item.Paper_ID,
           success: false,
           message: "All fields must have valid data!",
         });
@@ -19,30 +21,41 @@ const fileController = {
         .toLowerCase()
         .replace(/[-'"/=.,:;]/g, "");
     }
-    function normalizeAuthor(author) {
+    function normalizeAuthor(author,item) {
       if (!author || typeof author !== "string") {
-        return res.status(400).json({
-          success: false,
-          message: "All fields must have valid data!",
-        });
+      
+        return res
+          .status(400)
+          .json({
+            Paper_ID: item.Paper_ID,
+            success: false,
+            message: "All fields must have valid data!",
+          });
       }
       return author.replace(/\s+/g, " ").trim().toLowerCase();
     }
-    function normalizeName(name) {
+    function normalizeName(name,item) {
       if (!name || typeof name !== "string") {
-        return res.status(400).json({
-          success: false,
-          message: "All fields must have valid data!",
-        });
+        return res
+          .status(400)
+          .json({
+            Paper_ID: item.Paper_ID,
+            success: false,
+            message: "All fields must have valid data!",
+          });
       }
       return name.replace(/\s+/g, " ").trim().toLowerCase();
     }
-    function normalizeCmd(cmd) {
+    function normalizeCmd(cmd,item) {
       if (!cmd || typeof cmd !== "string") {
-        return res.status(400).json({
-          success: false,
-          message: "All fields must have valid data!",
-        });
+       
+        return res
+          .status(400)
+          .json({
+           Paper_ID: item.Paper_ID,
+            success: false,
+            message: "All fields must have valid data!",
+          });
       }
       return cmd.replace(/\s+/g, " ").trim().toLowerCase();
     }
@@ -77,10 +90,10 @@ const fileController = {
         for (const item of data) {
           try {
             const payload = {
-              Title: normalizeTitle(item.Title),
-              Author_Mail: normalizeAuthor(item.Author_Mail),
-              Conference_Name: normalizeName(item.Conference_Name),
-              Decision_With_Commends: normalizeCmd(item.Decision_With_Commends),
+              Title: normalizeTitle(item.Title,item),
+              Author_Mail: normalizeAuthor(item.Author_Mail,item),
+              Conference_Name: normalizeName(item.Conference_Name,item),
+              Decision_With_Commends: normalizeCmd(item.Decision_With_Commends,item),
               Precheck_Commends: normalizePrecheck(item.Precheck_Commends),
               Firstset_Commends: normalizeFirstset(item.Firstset_Commends),
             };
