@@ -20,19 +20,30 @@ const User = {
   },
   Signin: async (req, res) => {
     const { email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 12);
+
     try {
-      const response = await userModel.signinUser(email, hashedPassword);
-      if (!response) {
-        res.status(400).json({ message: "Error in user login" });
+      // DON'T hash the password here - just pass the plain password
+      const user = await userModel.signinUser(email, password);
+
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
       }
-      const token = await userModel.generateJWT(email, hashedPassword);
-      res.cookie("token", token, { maxAge: 3600000, httpOnly: true });
-      res
-        .status(200)
-        .json({ data: token, message: "user logged in successfully!" });
+
+      const token = await userModel.generateJWT(email);
+
+      res.cookie("token", token, {
+        maxAge: 3600000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+      });
+
+      res.status(200).json({
+        data: token,
+        message: "User logged in successfully!",
+      });
     } catch (error) {
-      res.status(400).json({ message: "Error while user trying to login" });
+      console.error("Signin error:", error);
+      res.status(401).json({ message: "Invalid credentials" });
     }
   },
   Signout: (req, res) => {
