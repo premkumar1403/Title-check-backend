@@ -2,6 +2,7 @@ const express = require("express");
 const fileController = require("../controller/file.controller");
 const router = express.Router();
 const upload = require("../middleware/multer");
+const { authenticateToken } = require("../middleware/auth");
 
 //file uploading route
 router.post("/file-upload", upload.single("file"), fileController.createFile);
