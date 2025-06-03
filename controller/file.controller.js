@@ -33,7 +33,7 @@ const fileController = {
       //     message: "All fields must have valid data!",
       //   });
       // }
-      return author.replace(spaceRegex, " ").trim().toLowerCase();
+      return author.replace(spaceRegex, " ").trim().replace(punctuationRegex, "").toLowerCase();
     }
 
     function normalizeName(name, item) {
@@ -44,7 +44,7 @@ const fileController = {
       //     message: "All fields must have valid data!",
       //   });
       // }
-      return name.replace(spaceRegex, " ").trim().toLowerCase();
+      return name.replace(spaceRegex, " ").trim().replace(punctuationRegex, "").toLowerCase();
     }
 
     function normalizeCmd(cmd, item) {
@@ -55,7 +55,7 @@ const fileController = {
       //     message: "All fields must have valid data!",
       //   });
       // }
-      return cmd.replace(spaceRegex, " ").trim().toLowerCase();
+      return cmd.replace(spaceRegex, " ").trim().replace(punctuationRegex, "").toLowerCase();
     }
 
     function normalizePrecheck(precheck) {
