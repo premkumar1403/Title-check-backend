@@ -11,13 +11,13 @@ const fileController = {
     const punctuationRegex = /[-'"/=.,:;]/g;
 
     function normalizeTitle(title, item) {
-      if (!title || typeof title !== "string") {
-        return res.status(400).json({
-          Paper_ID: item.Paper_ID,
-          success: false,
-          message: "All fields must have valid data!",
-        });
-      }
+      // if (!title || typeof title !== "string") {
+      //   return res.status(400).json({
+      //     Paper_ID: item.Paper_ID,
+      //     success: false,
+      //     message: "All fields must have valid data!",
+      //   });
+      // }
       return title
         .replace(spaceRegex, " ")
         .trim()
@@ -26,35 +26,35 @@ const fileController = {
     }
 
     function normalizeAuthor(author, item) {
-      if (!author || typeof author !== "string") {
-        return res.status(400).json({
-          Paper_ID: item.Paper_ID,
-          success: false,
-          message: "All fields must have valid data!",
-        });
-      }
+      // if (!author || typeof author !== "string") {
+      //   return res.status(400).json({
+      //     Paper_ID: item.Paper_ID,
+      //     success: false,
+      //     message: "All fields must have valid data!",
+      //   });
+      // }
       return author.replace(spaceRegex, " ").trim().toLowerCase();
     }
 
     function normalizeName(name, item) {
-      if (!name || typeof name !== "string") {
-        return res.status(400).json({
-          Paper_ID: item.Paper_ID,
-          success: false,
-          message: "All fields must have valid data!",
-        });
-      }
+      // if (!name || typeof name !== "string") {
+      //   return res.status(400).json({
+      //     Paper_ID: item.Paper_ID,
+      //     success: false,
+      //     message: "All fields must have valid data!",
+      //   });
+      // }
       return name.replace(spaceRegex, " ").trim().toLowerCase();
     }
 
     function normalizeCmd(cmd, item) {
-      if (!cmd || typeof cmd !== "string") {
-        return res.status(400).json({
-          Paper_ID: item.Paper_ID,
-          success: false,
-          message: "All fields must have valid data!",
-        });
-      }
+      // if (!cmd || typeof cmd !== "string") {
+      //   return res.status(400).json({
+      //     Paper_ID: item.Paper_ID,
+      //     success: false,
+      //     message: "All fields must have valid data!",
+      //   });
+      // }
       return cmd.replace(spaceRegex, " ").trim().toLowerCase();
     }
 
