@@ -14,8 +14,10 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://192.168.0.131:5173",
-      "http://localhost:5000", 
+      "http://localhost:5000",
       "http://192.168.0.131:5000",
+      "https://title-check-backend.onrender.com",
+      "https://title-check-frontend.onrender.com",
     ],
     credentials: true,
   })
@@ -26,7 +28,7 @@ app.use(limiter);
 app.use(cookieParser());
 const Port = process.env.PORT;
 MongoDB();
-
+ 
 app.use("/api/v1/users", userRouter); //user route
 app.use("/api/v1/file", fileRouter); //file route
 
