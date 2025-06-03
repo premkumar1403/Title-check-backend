@@ -18,7 +18,7 @@ const fileschema = new mongoose.Schema({
 fileschema.index({ Title: 1, "Author_Mail.Author_Mail": 1 });
 fileschema.index({ Title: "text", "Conference.Conference_Name": "text" });
 
-const file = mongoose.model("Excel", fileschema);
+const file = mongoose.model("Conference_Data", fileschema);
 
 const fileModel = {
   //Function checks title is exist or not
