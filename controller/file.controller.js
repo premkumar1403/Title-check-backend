@@ -4,78 +4,76 @@ const fileModel = require("../model/file.model");
 const fileController = {
   createFile: async (req, res) => {
     const file = req.file.buffer;
-    const page_num = req.query.page || 1;
+    const page_num = parseInt(req.query.page) || 1;
 
-    function normalizeTitle(title,item) {
+    // Pre-compiled regex patterns for better performance
+    const spaceRegex = /\s+/g;
+    const punctuationRegex = /[-'"/=.,:;]/g;
+
+    function normalizeTitle(title, item) {
       if (!title || typeof title !== "string") {
-   
-        
-        return res.status(400).json({Paper_ID:item.Paper_ID,
+        return res.status(400).json({
+          Paper_ID: item.Paper_ID,
           success: false,
           message: "All fields must have valid data!",
         });
       }
       return title
-        .replace(/\s+/g, " ")
+        .replace(spaceRegex, " ")
         .trim()
         .toLowerCase()
-        .replace(/[-'"/=.,:;]/g, "");
+        .replace(punctuationRegex, "");
     }
-    function normalizeAuthor(author,item) {
+
+    function normalizeAuthor(author, item) {
       if (!author || typeof author !== "string") {
-      
-        return res
-          .status(400)
-          .json({
-            Paper_ID: item.Paper_ID,
-            success: false,
-            message: "All fields must have valid data!",
-          });
+        return res.status(400).json({
+          Paper_ID: item.Paper_ID,
+          success: false,
+          message: "All fields must have valid data!",
+        });
       }
-      return author.replace(/\s+/g, " ").trim().toLowerCase();
+      return author.replace(spaceRegex, " ").trim().toLowerCase();
     }
-    function normalizeName(name,item) {
+
+    function normalizeName(name, item) {
       if (!name || typeof name !== "string") {
-        return res
-          .status(400)
-          .json({
-            Paper_ID: item.Paper_ID,
-            success: false,
-            message: "All fields must have valid data!",
-          });
+        return res.status(400).json({
+          Paper_ID: item.Paper_ID,
+          success: false,
+          message: "All fields must have valid data!",
+        });
       }
-      return name.replace(/\s+/g, " ").trim().toLowerCase();
+      return name.replace(spaceRegex, " ").trim().toLowerCase();
     }
-    function normalizeCmd(cmd,item) {
+
+    function normalizeCmd(cmd, item) {
       if (!cmd || typeof cmd !== "string") {
-       
-        return res
-          .status(400)
-          .json({
-           Paper_ID: item.Paper_ID,
-            success: false,
-            message: "All fields must have valid data!",
-          });
+        return res.status(400).json({
+          Paper_ID: item.Paper_ID,
+          success: false,
+          message: "All fields must have valid data!",
+        });
       }
-      return cmd.replace(/\s+/g, " ").trim().toLowerCase();
+      return cmd.replace(spaceRegex, " ").trim().toLowerCase();
     }
 
     function normalizePrecheck(precheck) {
       if (!precheck) return "";
       return precheck
-        .replace(/\s+/g, " ")
+        .replace(spaceRegex, " ")
         .trim()
         .toLowerCase()
-        .replace(/[-'"/=,:;]/g, "");
+        .replace(punctuationRegex, "");
     }
 
     function normalizeFirstset(firstset) {
       if (!firstset) return "";
       return firstset
-        .replace(/\s+/g, " ")
+        .replace(spaceRegex, " ")
         .trim()
         .toLowerCase()
-        .replace(/[-'"/=,:;]/g, "");
+        .replace(punctuationRegex, "");
     }
 
     try {
@@ -83,67 +81,87 @@ const fileController = {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const data = XLSX.utils.sheet_to_json(worksheet, { header: 0 });
+
       if (!data || data.length === 0) {
-        return null;
-      } else {
-        const response = [];
-        for (const item of data) {
-          try {
-            const payload = {
-              Title: normalizeTitle(item.Title,item),
-              Author_Mail: normalizeAuthor(item.Author_Mail,item),
-              Conference_Name: normalizeName(item.Conference_Name,item),
-              Decision_With_Commends: normalizeCmd(item.Decision_With_Commends,item),
-              Precheck_Commends: normalizePrecheck(item.Precheck_Commends),
-              Firstset_Commends: normalizeFirstset(item.Firstset_Commends),
-            };
-            const responses = await fileModel.createField(payload);
-            response.push(responses);
-          } catch (error) {
-            console.log("error uploading files!" + error);
-          }
+        return res.status(400).json({ message: "No data found in file!" });
+      }
+
+      // Calculate pagination first
+      const page_size = 25;
+      const start_index = (page_num - 1) * page_size;
+      const end_index = start_index + page_size;
+      const total_page = Math.ceil(data.length / page_size);
+
+      // Only process the data needed for current page
+      const pageData = data.slice(start_index, end_index);
+      const response = [];
+
+      // Process only current page data
+      const batchPromises = pageData.map(async (item) => {
+        try {
+          const payload = {
+            Title: normalizeTitle(item.Title, item),
+            Author_Mail: normalizeAuthor(item.Author_Mail, item),
+            Conference_Name: normalizeName(item.Conference_Name, item),
+            Decision_With_Commends: normalizeCmd(
+              item.Decision_With_Commends,
+              item
+            ),
+            Precheck_Commends: normalizePrecheck(item.Precheck_Commends),
+            Firstset_Commends: normalizeFirstset(item.Firstset_Commends),
+          };
+          return await fileModel.createField(payload);
+        } catch (error) {
+          console.log("error uploading files!" + error);
+          return null;
         }
-        //pagination code
-        const page = page_num;
-        const page_size = 25;
-        const start_index = (page - 1) * page_size;
-        const end_index = start_index + page_size;
-        const total_page = Math.ceil(response.length / page_size);
-        const paginated_data = response.slice(start_index, end_index);
-        return res.status(201).json({
-          page,
-          total_page,
-          response: paginated_data,
-          message: "file uploaded to database successfully!",
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+      response.push(...batchResults.filter((result) => result !== null));
+
+      // Process remaining data in background (fire and forget)
+      if (page_num === 1 && data.length > page_size) {
+        setImmediate(async () => {
+          const remainingData = data.slice(page_size);
+          const batchSize = 50;
+
+          for (let i = 0; i < remainingData.length; i += batchSize) {
+            const batch = remainingData.slice(i, i + batchSize);
+            const backgroundPromises = batch.map(async (item) => {
+              try {
+                const payload = {
+                  Title: normalizeTitle(item.Title, item),
+                  Author_Mail: normalizeAuthor(item.Author_Mail, item),
+                  Conference_Name: normalizeName(item.Conference_Name, item),
+                  Decision_With_Commends: normalizeCmd(
+                    item.Decision_With_Commends,
+                    item
+                  ),
+                  Precheck_Commends: normalizePrecheck(item.Precheck_Commends),
+                  Firstset_Commends: normalizeFirstset(item.Firstset_Commends),
+                };
+                return await fileModel.createField(payload);
+              } catch (error) {
+                console.log("background processing error: " + error);
+                return null;
+              }
+            });
+            await Promise.all(backgroundPromises);
+          }
         });
       }
+
+      return res.status(201).json({
+        page: page_num,
+        total_page,
+        response: response,
+        message: "file uploaded to database successfully!",
+      });
     } catch (error) {
       return res.status(500).json({ message: "Internal server error!" });
     }
   },
-
-  // getFile: async (req, res) => {
-  //   const page_num = req.query.page || 1;
-  //   try {
-  //     const response = await fileModel.getFile();
-  //     const page = page_num;
-  //     const page_size = 25;
-  //     const start_index = (page - 1) * page_size;
-  //     const end_index = start_index + page_size;
-  //     const total_page = Math.ceil(response.length / page_size);
-  //     const paginated_data = response.slice(start_index, end_index);
-  //     res
-  //       .status(200)
-  //       .json({
-  //         page,
-  //         total_page,
-  //         data: paginated_data,
-  //         message: "files fetched successfully",
-  //       });
-  //   } catch (error) {
-  //     res.status(400).json({ message: "No records found!" });
-  //   }
-  // },
 
   //with pagination title query
   getFile: async (req, res) => {
@@ -155,6 +173,7 @@ const fileController = {
         .trim()
         .toLowerCase()
         .replace(/[-'".,:;]/g, "");
+
       const currentPage = parseInt(page);
       const itemsPerPage = parseInt(limit);
 

@@ -13,16 +13,16 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "http://192.168.219.50:5173",
+      "http://192.168.0.131:5173",
       "http://localhost:5000", 
-      "http://192.168.219.50:5000",
+      "http://192.168.0.131:5000",
     ],
     credentials: true,
   })
 );
 app.use(express.json());
 dotenv.config(); 
-app.use(limiter); 
+app.use(limiter);  
 app.use(cookieParser());
 const Port = process.env.PORT;
 MongoDB();

@@ -2,17 +2,21 @@ const mongoose = require("mongoose");
 const stringSimilarity = require("string-similarity");
 
 const fileschema = new mongoose.Schema({
-  Title: { type: String},
+  Title: { type: String, index: true },
   Author_Mail: [{ Author_Mail: { type: String } }],
   Conference: [
     {
-      Conference_Name: { type: String},
+      Conference_Name: { type: String, index: true },
       Decision_With_Commends: { type: String },
       Precheck_Commends: { type: String },
-      Firstset_Commends:{type:String}
-    }, 
+      Firstset_Commends: { type: String },
+    },
   ],
 });
+
+// Compound indexes for better query performance
+fileschema.index({ Title: 1, "Author_Mail.Author_Mail": 1 });
+fileschema.index({ Title: "text", "Conference.Conference_Name": "text" });
 
 const file = mongoose.model("Excel", fileschema);
 
@@ -27,21 +31,17 @@ const fileModel = {
       Precheck_Commends,
       Firstset_Commends,
     } = payload;
-    
+
     let savedFile = null;
-    const existingFile = await file.findOne({ Title });
-    // const title_score = await file.find({ Title: { $regex: Title, $options: "i" }, });
-    // for (let item of title_score) {
-    //   const score = stringSimilarity.compareTwoStrings(item.Title, Title);
-    //   if (score>0.7) {
-    //     console.log(`${item.Title}`,+score);
-    //   }
-      
-    // }
+    const existingFile = await file.findOne({ Title }, { __v: 0 }).lean();
+
     if (existingFile) {
       const authorExists = existingFile.Author_Mail.some(
         (author) => author.Author_Mail === Author_Mail
       );
+
+      let updateOperations = {};
+      let hasMultipleOperations = false;
 
       if (authorExists) {
         const conferenceIndex = existingFile.Conference.findIndex(
@@ -50,63 +50,94 @@ const fileModel = {
 
         if (conferenceIndex !== -1) {
           if (Decision_With_Commends && Decision_With_Commends.trim() !== "") {
-            existingFile.Conference[conferenceIndex].Decision_With_Commends = Decision_With_Commends;
-            existingFile.Conference[conferenceIndex].Precheck_Commends = Precheck_Commends;
-            existingFile.Conference[conferenceIndex].Firstset_Commends = Firstset_Commends;
-          } else {
-            console.log("Empty decision prechek and firstset commend — keeping old value");
+            updateOperations.$set = {
+              [`Conference.${conferenceIndex}.Decision_With_Commends`]:
+                Decision_With_Commends,
+              [`Conference.${conferenceIndex}.Precheck_Commends`]:
+                Precheck_Commends,
+              [`Conference.${conferenceIndex}.Firstset_Commends`]:
+                Firstset_Commends,
+            };
           }
         } else {
-          existingFile.Conference.push({
-            Conference_Name,
-            Decision_With_Commends,
-            Precheck_Commends,
-            Firstset_Commends
-          });
+          updateOperations.$push = {
+            Conference: {
+              Conference_Name,
+              Decision_With_Commends,
+              Precheck_Commends,
+              Firstset_Commends,
+            },
+          };
         }
       } else {
-        existingFile.Author_Mail.push({ Author_Mail });
-
         const conferenceIndex = existingFile.Conference.findIndex(
           (conf) => conf.Conference_Name === Conference_Name
         );
 
         if (conferenceIndex !== -1) {
+          updateOperations.$push = { Author_Mail: { Author_Mail } };
           if (Decision_With_Commends && Decision_With_Commends.trim() !== "") {
-            existingFile.Conference[conferenceIndex].Decision_With_Commends = Decision_With_Commends;
-            existingFile.Conference[conferenceIndex].Precheck_Commends = Precheck_Commends;
-            existingFile.Conference[conferenceIndex].Firstset_Commends = Firstset_Commends;
-          } else {
-            console.log("Empty decision — keeping old value");
+            updateOperations.$set = {
+              [`Conference.${conferenceIndex}.Decision_With_Commends`]:
+                Decision_With_Commends,
+              [`Conference.${conferenceIndex}.Precheck_Commends`]:
+                Precheck_Commends,
+              [`Conference.${conferenceIndex}.Firstset_Commends`]:
+                Firstset_Commends,
+            };
+            hasMultipleOperations = true;
           }
         } else {
-          existingFile.Conference.push({
-            Conference_Name,
-            Decision_With_Commends,
-            Precheck_Commends,
-            Firstset_Commends
-          });
-        }
-      }
-
-      savedFile = await existingFile.save();
-      return savedFile;
-    } else {
-      const newfile = await file.create([
-        {
-          Title,
-          Author_Mail: [{ Author_Mail }],
-          Conference: [
-            {
+          updateOperations.$push = {
+            Author_Mail: { Author_Mail },
+            Conference: {
               Conference_Name,
               Decision_With_Commends,
               Precheck_Commends,
-              Firstset_Commends
+              Firstset_Commends,
             },
-          ],
-        },
-      ]);
-      return newfile;
+          };
+        }
+      }
+
+      if (Object.keys(updateOperations).length > 0) {
+        if (hasMultipleOperations) {
+          // Handle multiple operations separately for better performance
+          await file.updateOne(
+            { _id: existingFile._id },
+            { $push: updateOperations.$push }
+          );
+          savedFile = await file.findByIdAndUpdate(
+            existingFile._id,
+            { $set: updateOperations.$set },
+            { new: true, runValidators: false, lean: true }
+          );
+        } else {
+          savedFile = await file.findByIdAndUpdate(
+            existingFile._id,
+            updateOperations,
+            { new: true, runValidators: false, lean: true }
+          );
+        }
+      } else {
+        savedFile = existingFile;
+      }
+
+      return savedFile;
+    } else {
+      const newfile = await file.create({
+        Title,
+        Author_Mail: [{ Author_Mail }],
+        Conference: [
+          {
+            Conference_Name,
+            Decision_With_Commends,
+            Precheck_Commends,
+            Firstset_Commends,
+          },
+        ],
+      });
+      return newfile.toObject();
     }
   },
 
@@ -117,26 +148,32 @@ const fileModel = {
 
   //getting a file
   getFile: async () => {
-    return await file.find();
+    return await file.find().lean();
   },
 
   getPaginatedFiles: async (searchTerm, page, limit) => {
     const skip = (page - 1) * limit;
-    const query = {
-      $or: [
-        { Title: { $regex: searchTerm, $options: "i" } },
-        { "Conference.Conference_Name": { $regex: searchTerm, $options: "i" } },
-      ],
-    };
-    const totalCount = await file.countDocuments(query);
-    const results = await file.find(query).skip(skip).limit(limit);
+    const query = searchTerm
+      ? {
+          $text: { $search: searchTerm },
+        }
+      : {};
+
+    const [results, totalCount] = await Promise.all([
+      file.find(query).skip(skip).limit(limit).lean(),
+      file.countDocuments(query),
+    ]);
+
     return { results, totalCount };
   },
+
   //search with title
   searchTitle: async (Title) => {
-    return await file.find({
-      Title: { $regex: Title, $options: "i" },
-    });
+    return await file
+      .find({
+        Title: { $regex: Title, $options: "i" },
+      })
+      .lean();
   },
 };
 
