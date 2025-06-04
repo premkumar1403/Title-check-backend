@@ -21,7 +21,7 @@ const fileController = {
       // }
       return title
         .toLowerCase()
-        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/[-’'"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -37,7 +37,7 @@ const fileController = {
       // }
       return author
         .toLowerCase()
-        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/[-’'"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -53,7 +53,7 @@ const fileController = {
       // }
       return name
         .toLowerCase()
-        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/[-’'"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -69,7 +69,7 @@ const fileController = {
       // }
       return cmd
         .toLowerCase()
-        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/[-’'"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -78,7 +78,7 @@ const fileController = {
       if (!precheck) return "";
       return precheck
         .toLowerCase()
-        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/[-’'"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -87,7 +87,7 @@ const fileController = {
       if (!firstset) return "";
       return firstset
         .toLowerCase()
-        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/[-’'"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -187,7 +187,7 @@ const fileController = {
 
       const searchTerm = q
         .toLowerCase()
-        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/[-’'"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
       console.log(searchTerm);
@@ -217,10 +217,10 @@ const fileController = {
   //without pagination title query
   searchTitle: async (req, res) => {
     const title = req.query.Title?.toLowerCase()
-      .replace(/[-'"/=.,:;]/g, " ")
+      .replace(/[-’'"/=.,:;]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
-    const normalized_title = title.replace(/[-'".,:;]/g, "");
+    const normalized_title = title.replace(/[-’'".,:;]/g, "");
     try {
       const response = await fileModel.searchTitle(normalized_title);
       res.status(200).json({
