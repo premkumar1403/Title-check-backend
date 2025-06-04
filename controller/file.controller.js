@@ -7,10 +7,11 @@ const fileController = {
     const page_num = parseInt(req.query.page) || 1;
 
     // Pre-compiled regex patterns for better performance
-    const spaceRegex = /\s+/g;
-    const punctuationRegex = /[-'"/=.,:;]/g;
+    // const spaceRegex = /\s+/g;
+    // const punctuationRegex = /[-'"/=.,:;]/g;
 
     function normalizeTitle(title, item) {
+      if (!title) return "";
       // if (!title || typeof title !== "string") {
       //   return res.status(400).json({
       //     Paper_ID: item.Paper_ID,
@@ -19,13 +20,14 @@ const fileController = {
       //   });
       // }
       return title
-        .replace(spaceRegex, " ")
-        .trim()
         .toLowerCase()
-        .replace(punctuationRegex, "");
+        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
 
     function normalizeAuthor(author, item) {
+      if (!author) return "";
       // if (!author || typeof author !== "string") {
       //   return res.status(400).json({
       //     Paper_ID: item.Paper_ID,
@@ -33,10 +35,15 @@ const fileController = {
       //     message: "All fields must have valid data!",
       //   });
       // }
-      return author.replace(spaceRegex, " ").trim().replace(punctuationRegex, "").toLowerCase();
+      return author
+        .toLowerCase()
+        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
 
     function normalizeName(name, item) {
+      if (!name) return "";
       // if (!name || typeof name !== "string") {
       //   return res.status(400).json({
       //     Paper_ID: item.Paper_ID,
@@ -44,10 +51,15 @@ const fileController = {
       //     message: "All fields must have valid data!",
       //   });
       // }
-      return name.replace(spaceRegex, " ").trim().replace(punctuationRegex, "").toLowerCase();
+      return name
+        .toLowerCase()
+        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
 
     function normalizeCmd(cmd, item) {
+      if (!cmd) return "";
       // if (!cmd || typeof cmd !== "string") {
       //   return res.status(400).json({
       //     Paper_ID: item.Paper_ID,
@@ -55,25 +67,29 @@ const fileController = {
       //     message: "All fields must have valid data!",
       //   });
       // }
-      return cmd.replace(spaceRegex, " ").trim().replace(punctuationRegex, "").toLowerCase();
+      return cmd
+        .toLowerCase()
+        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
 
     function normalizePrecheck(precheck) {
       if (!precheck) return "";
       return precheck
-        .replace(spaceRegex, " ")
-        .trim()
         .toLowerCase()
-        .replace(punctuationRegex, "");
+        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
 
     function normalizeFirstset(firstset) {
       if (!firstset) return "";
       return firstset
-        .replace(spaceRegex, " ")
-        .trim()
         .toLowerCase()
-        .replace(punctuationRegex, "");
+        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
 
     try {
@@ -103,12 +119,12 @@ const fileController = {
             Title: normalizeTitle(item.Title, item),
             Author_Mail: normalizeAuthor(item.Author_Mail, item),
             Conference_Name: normalizeName(item.Conference_Name, item),
-            Decision_With_Commends: normalizeCmd(
-              item.Decision_With_Commends,
+            Decision_With_Comments: normalizeCmd(
+              item.Decision_With_Comments,
               item
             ),
-            Precheck_Commends: normalizePrecheck(item.Precheck_Commends),
-            Firstset_Commends: normalizeFirstset(item.Firstset_Commends),
+            Precheck_Comments: normalizePrecheck(item.Precheck_Comments),
+            Firstset_Comments: normalizeFirstset(item.Firstset_Comments),
           };
           return await fileModel.createField(payload);
         } catch (error) {
@@ -119,7 +135,7 @@ const fileController = {
 
       const batchResults = await Promise.all(batchPromises);
       response.push(...batchResults.filter((result) => result !== null));
-
+      
       // Process remaining data in background (fire and forget)
       if (page_num === 1 && data.length > page_size) {
         setImmediate(async () => {
@@ -134,12 +150,12 @@ const fileController = {
                   Title: normalizeTitle(item.Title, item),
                   Author_Mail: normalizeAuthor(item.Author_Mail, item),
                   Conference_Name: normalizeName(item.Conference_Name, item),
-                  Decision_With_Commends: normalizeCmd(
-                    item.Decision_With_Commends,
+                  Decision_With_Comments: normalizeCmd(
+                    item.Decision_With_Comments,
                     item
                   ),
-                  Precheck_Commends: normalizePrecheck(item.Precheck_Commends),
-                  Firstset_Commends: normalizeFirstset(item.Firstset_Commends),
+                  Precheck_Comments: normalizePrecheck(item.Precheck_Comments),
+                  Firstset_Comments: normalizeFirstset(item.Firstset_Comments),
                 };
                 return await fileModel.createField(payload);
               } catch (error) {
@@ -150,14 +166,15 @@ const fileController = {
             await Promise.all(backgroundPromises);
           }
         });
-      }
-
-      return res.status(201).json({
+      }      
+       return res.status(201).json({
         page: page_num,
         total_page,
         response: response,
         message: "file uploaded to database successfully!",
       });
+     
+      
     } catch (error) {
       return res.status(500).json({ message: "Internal server error!" });
     }
@@ -169,11 +186,12 @@ const fileController = {
       const { q = "", page = 1, limit = 25 } = req.query;
 
       const searchTerm = q
-        .replace(/\s+/g, " ")
-        .trim()
         .toLowerCase()
-        .replace(/[-'".,:;]/g, "");
-
+        .replace(/[-'"/=.,:;]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      console.log(searchTerm);
+      
       const currentPage = parseInt(page);
       const itemsPerPage = parseInt(limit);
 
@@ -198,7 +216,10 @@ const fileController = {
 
   //without pagination title query
   searchTitle: async (req, res) => {
-    const title = req.query.Title?.replace(/\s+/g, " ").trim().toLowerCase();
+    const title = req.query.Title?.toLowerCase()
+      .replace(/[-'"/=.,:;]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     const normalized_title = title.replace(/[-'".,:;]/g, "");
     try {
       const response = await fileModel.searchTitle(normalized_title);

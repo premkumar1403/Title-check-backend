@@ -21,7 +21,7 @@ app.use(
     ],
     credentials: true,
   })
-);
+); 
 app.use(express.json());
 dotenv.config(); 
 app.use(limiter);  

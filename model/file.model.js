@@ -7,9 +7,9 @@ const fileschema = new mongoose.Schema({
   Conference: [
     {
       Conference_Name: { type: String, index: true },
-      Decision_With_Commends: { type: String },
-      Precheck_Commends: { type: String },
-      Firstset_Commends: { type: String },
+      Decision_With_Comments: { type: String },
+      Precheck_Comments: { type: String },
+      Firstset_Comments: { type: String },
     },
   ],
 });
@@ -27,9 +27,9 @@ const fileModel = {
       Title,
       Author_Mail,
       Conference_Name,
-      Decision_With_Commends,
-      Precheck_Commends,
-      Firstset_Commends,
+      Decision_With_Comments,
+      Precheck_Comments,
+      Firstset_Comments,
     } = payload;
 
     let savedFile = null;
@@ -49,23 +49,23 @@ const fileModel = {
         );
 
         if (conferenceIndex !== -1) {
-          if (Decision_With_Commends && Decision_With_Commends.trim() !== "") {
+          if (Decision_With_Comments && Decision_With_Comments.trim() !== "") {
             updateOperations.$set = {
-              [`Conference.${conferenceIndex}.Decision_With_Commends`]:
-                Decision_With_Commends,
-              [`Conference.${conferenceIndex}.Precheck_Commends`]:
-                Precheck_Commends,
-              [`Conference.${conferenceIndex}.Firstset_Commends`]:
-                Firstset_Commends,
+              [`Conference.${conferenceIndex}.Decision_With_Comments`]:
+                Decision_With_Comments,
+              [`Conference.${conferenceIndex}.Precheck_Comments`]:
+                Precheck_Comments,
+              [`Conference.${conferenceIndex}.Firstset_Comments`]:
+                Firstset_Comments,
             };
           }
         } else {
           updateOperations.$push = {
             Conference: {
               Conference_Name,
-              Decision_With_Commends,
-              Precheck_Commends,
-              Firstset_Commends,
+              Decision_With_Comments,
+              Precheck_Comments,
+              Firstset_Comments,
             },
           };
         }
@@ -76,14 +76,14 @@ const fileModel = {
 
         if (conferenceIndex !== -1) {
           updateOperations.$push = { Author_Mail: { Author_Mail } };
-          if (Decision_With_Commends && Decision_With_Commends.trim() !== "") {
+          if (Decision_With_Comments && Decision_With_Comments.trim() !== "") {
             updateOperations.$set = {
-              [`Conference.${conferenceIndex}.Decision_With_Commends`]:
-                Decision_With_Commends,
-              [`Conference.${conferenceIndex}.Precheck_Commends`]:
-                Precheck_Commends,
-              [`Conference.${conferenceIndex}.Firstset_Commends`]:
-                Firstset_Commends,
+              [`Conference.${conferenceIndex}.Decision_With_Comments`]:
+                Decision_With_Comments,
+              [`Conference.${conferenceIndex}.Precheck_Comments`]:
+                Precheck_Comments,
+              [`Conference.${conferenceIndex}.Firstset_Comments`]:
+                Firstset_Comments,
             };
             hasMultipleOperations = true;
           }
@@ -92,9 +92,9 @@ const fileModel = {
             Author_Mail: { Author_Mail },
             Conference: {
               Conference_Name,
-              Decision_With_Commends,
-              Precheck_Commends,
-              Firstset_Commends,
+              Decision_With_Comments,
+              Precheck_Comments,
+              Firstset_Comments,
             },
           };
         }
@@ -131,9 +131,9 @@ const fileModel = {
         Conference: [
           {
             Conference_Name,
-            Decision_With_Commends,
-            Precheck_Commends,
-            Firstset_Commends,
+            Decision_With_Comments,
+            Precheck_Comments,
+            Firstset_Comments,
           },
         ],
       });
@@ -155,8 +155,8 @@ const fileModel = {
     const skip = (page - 1) * limit;
     const query = searchTerm
       ? {
-          $text: { $search: searchTerm },
-        }
+        "Title": { $regex: searchTerm, $options: 'i' },
+      }
       : {};
 
     const [results, totalCount] = await Promise.all([

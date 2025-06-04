@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({
@@ -18,8 +18,13 @@ const authenticateToken = (req, res, next) => {
         message: "Invalid or expired token",
       });
     }
-
-    req.user = user; // Add user info to request object
+    const useremails = [".iro@gmail.com", ".conffy@gmail.com", ".ejesra@gmail.com"];
+    const validEmails = user.email && useremails.some((email) => user.email.endswith(email));
+    if (!validEmails) {
+      res.jsonn({success:false, message: "unauthorized user!" });
+    }
+  
+    req.user = user;
     next();
   });
 };
