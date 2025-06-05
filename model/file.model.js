@@ -122,8 +122,6 @@ const fileModel = {
       } else {
         savedFile = existingFile;
       }
-
-      return savedFile;
     } else {
       const newfile = await file.create({
         Title,
@@ -137,13 +135,16 @@ const fileModel = {
           },
         ],
       });
-      return newfile.toObject();
+      savedFile = newfile.toObject();
     }
   },
 
   //Record creation
   createField: async (payload) => {
-    return await fileModel.checkTitleExist(payload);
+    const {Title } = payload;
+    const result = await fileModel.checkTitleExist(payload);
+    const existingFile = await file.findOne({ Title }, { __v: 0 }).lean();
+    return existingFile;
   },
 
   //getting a file
@@ -155,8 +156,8 @@ const fileModel = {
     const skip = (page - 1) * limit;
     const query = searchTerm
       ? {
-        "Title": { $regex: searchTerm, $options: 'i' },
-      }
+          Title: { $regex: searchTerm, $options: "i" },
+        }
       : {};
 
     const [results, totalCount] = await Promise.all([
@@ -168,12 +169,9 @@ const fileModel = {
   },
 
   //search with title
-  searchTitle: async (Title) => {
-    return await file
-      .find({
-        Title: { $regex: Title, $options: "i" },
-      })
-      .lean();
+  searchTitle: async (payload) => {
+    const { Title } = payload;
+    return await file.findOne({ Title }, { __v: 0 }).lean();
   },
 };
 

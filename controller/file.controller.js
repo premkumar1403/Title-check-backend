@@ -21,7 +21,7 @@ const fileController = {
       // }
       return title
         .toLowerCase()
-        .replace(/[-’'"/=.,:;]/g, " ")
+        .replace(/[-''"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -37,7 +37,7 @@ const fileController = {
       // }
       return author
         .toLowerCase()
-        .replace(/[-’'"/=.,:;]/g, " ")
+        .replace(/[-''"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -53,7 +53,7 @@ const fileController = {
       // }
       return name
         .toLowerCase()
-        .replace(/[-’'"/=.,:;]/g, " ")
+        .replace(/[-''"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -69,7 +69,7 @@ const fileController = {
       // }
       return cmd
         .toLowerCase()
-        .replace(/[-’'"/=.,:;]/g, " ")
+        .replace(/[-''"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -78,7 +78,7 @@ const fileController = {
       if (!precheck) return "";
       return precheck
         .toLowerCase()
-        .replace(/[-’'"/=.,:;]/g, " ")
+        .replace(/[-''"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -87,7 +87,7 @@ const fileController = {
       if (!firstset) return "";
       return firstset
         .toLowerCase()
-        .replace(/[-’'"/=.,:;]/g, " ")
+        .replace(/[-''"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -111,6 +111,7 @@ const fileController = {
       // Only process the data needed for current page
       const pageData = data.slice(start_index, end_index);
       const response = [];
+      const processedTitles = new Set(); // Track processed titles to avoid duplicates
 
       // Process only current page data
       const batchPromises = pageData.map(async (item) => {
@@ -126,7 +127,15 @@ const fileController = {
             Precheck_Comments: normalizePrecheck(item.Precheck_Comments),
             Firstset_Comments: normalizeFirstset(item.Firstset_Comments),
           };
-          return await fileModel.createField(payload);
+
+          const result = await fileModel.createField(payload);
+
+          // Only add to response if title hasn't been processed yet
+          if (result && !processedTitles.has(result.Title)) {
+            processedTitles.add(result.Title);
+            return result;
+          }
+          return null;
         } catch (error) {
           console.log("error uploading files!" + error);
           return null;
@@ -135,7 +144,7 @@ const fileController = {
 
       const batchResults = await Promise.all(batchPromises);
       response.push(...batchResults.filter((result) => result !== null));
-      
+
       // Process remaining data in background (fire and forget)
       if (page_num === 1 && data.length > page_size) {
         setImmediate(async () => {
@@ -166,15 +175,13 @@ const fileController = {
             await Promise.all(backgroundPromises);
           }
         });
-      }      
-       return res.status(201).json({
+      }
+      return res.status(201).json({
         page: page_num,
         total_page,
         response: response,
         message: "file uploaded to database successfully!",
       });
-     
-      
     } catch (error) {
       return res.status(500).json({ message: "Internal server error!" });
     }
@@ -187,11 +194,11 @@ const fileController = {
 
       const searchTerm = q
         .toLowerCase()
-        .replace(/[-’'"/=.,:;]/g, " ")
+        .replace(/[-''"/=.,:;]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
       console.log(searchTerm);
-      
+
       const currentPage = parseInt(page);
       const itemsPerPage = parseInt(limit);
 
@@ -217,12 +224,12 @@ const fileController = {
   //without pagination title query
   searchTitle: async (req, res) => {
     const title = req.query.Title?.toLowerCase()
-      .replace(/[-’'"/=.,:;]/g, " ")
+      .replace(/[-''"/=.,:;]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
-    const normalized_title = title.replace(/[-’'".,:;]/g, "");
+
     try {
-      const response = await fileModel.searchTitle(normalized_title);
+      const response = await fileModel.searchTitle({ Title: title });
       res.status(200).json({
         data: response,
         message: "Title matched files fetched successfully!",
