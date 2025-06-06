@@ -127,7 +127,8 @@ const fileController = {
             Precheck_Comments: normalizePrecheck(item.Precheck_Comments),
             Firstset_Comments: normalizeFirstset(item.Firstset_Comments),
           };
-
+          console.log(payload);
+          
           const result = await fileModel.createField(payload);
 
           // Only add to response if title hasn't been processed yet
