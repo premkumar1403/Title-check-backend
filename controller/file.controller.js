@@ -11,7 +11,7 @@ const fileController = {
     // const punctuationRegex = /[-'"/=.,:;]/g;
 
     function normalizeTitle(title, item) {
-      if (!title) return "";
+      if (!title) return;
       // if (!title || typeof title !== "string") {
       //   return res.status(400).json({
       //     Paper_ID: item.Paper_ID,
@@ -27,7 +27,7 @@ const fileController = {
     }
 
     function normalizeAuthor(author, item) {
-      if (!author) return "";
+      if (!author) return;
       // if (!author || typeof author !== "string") {
       //   return res.status(400).json({
       //     Paper_ID: item.Paper_ID,
@@ -43,7 +43,7 @@ const fileController = {
     }
 
     function normalizeName(name, item) {
-      if (!name) return "";
+      if (!name) return;
       // if (!name || typeof name !== "string") {
       //   return res.status(400).json({
       //     Paper_ID: item.Paper_ID,
@@ -59,7 +59,7 @@ const fileController = {
     }
 
     function normalizeCmd(cmd, item) {
-      if (!cmd) return "";
+      if (!cmd) return;
       // if (!cmd || typeof cmd !== "string") {
       //   return res.status(400).json({
       //     Paper_ID: item.Paper_ID,
@@ -79,7 +79,7 @@ const fileController = {
       return precheck
         .toLowerCase()
         .replace(/[-''"/=.,:;]/g, " ")
-        .replace(/\s+/g, " ")
+        .replace(/\s+/g, " ") 
         .trim();
     }
 
@@ -241,6 +241,15 @@ const fileController = {
       });
     }
   },
+
+  nameFilter:async()=>{
+    try {
+      const response=await fileModel.nameFilter();
+      res.status(200).json({data:response,message:"conference names fetched successfully!"});
+    } catch (error) {
+       res.status(500).json({message:"there is no conference name available!"});
+    }
+  }
 };
 
 module.exports = fileController;
