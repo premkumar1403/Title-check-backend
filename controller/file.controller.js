@@ -227,7 +227,6 @@ const fileController = {
       .replace(/[-''"/=.,:;]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
-
     try {
       const response = await fileModel.searchTitle({ Title: title });
       res.status(200).json({
@@ -242,14 +241,58 @@ const fileController = {
     }
   },
 
-  nameFilter:async()=>{
+
+  //fetching conference name controller
+  confNameFilter:async(req,res)=>{
     try {
-      const response=await fileModel.nameFilter();
-      res.status(200).json({data:response,message:"conference names fetched successfully!"});
+      const nameArray=[];
+      const response = await fileModel.confNameFilter();
+      nameArray.push(...response); 
+      res.status(200).json({
+        data:nameArray,
+        message:"conference names fetched successfully!"});
     } catch (error) {
        res.status(500).json({message:"there is no conference name available!"});
     }
-  }
-};
+  },
 
+confNameUpload:async(req,res)=>{
+   const {page = 1, limit = 25 } = req.query;
+   const {confname}=req.body;
+
+   try {
+    const currentPage = parseInt(page);
+    const itemsPerPage = parseInt(limit);
+    const {response,totalCount}=await fileModel.confNameUpload(confname,currentPage,itemsPerPage);
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+    res.status(200).json({
+      page:currentPage,
+      total_pages:totalPages,
+      data:response,
+      message:"selected conference name datas fetched successfully!"});
+   } catch (error) {
+    res.status(500).json({message:"there is no conference available!"});
+   }
+  },
+
+
+confCmdUpload:async(req,res)=>{
+const { page = 1, limit = 25 }=req.query;
+const {comment} = req.body;
+try {
+  const currentPage = parseInt(page);
+  const itemsPerPage = parseInt(limit);
+  const {response,totalCount} = await fileModel.confCmdUpload(comment,currentPage,itemsPerPage);
+  const totalPages = Math.ceil(totalCount/itemsPerPage);
+  res.status(200).send({
+    page:currentPage,
+    total_pages:totalPages,
+    data:response,
+    message:"results fetched successfully based on comments!"});
+} catch (error) {
+  res.status(500).json({message:"there is no conference data available"});
+}
+},
+
+};
 module.exports = fileController;

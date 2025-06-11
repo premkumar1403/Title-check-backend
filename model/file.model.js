@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const stringSimilarity = require("string-similarity");
 
+
 const fileschema = new mongoose.Schema({
   Title: { type: String, index: true },
   Author_Mail: [{ Author_Mail: { type: String } }],
@@ -13,7 +14,7 @@ const fileschema = new mongoose.Schema({
     },
   ],
 }, {
-  timestamps:true
+  timestamps: true
 });
 
 // Compound indexes for better query performance
@@ -143,7 +144,7 @@ const fileModel = {
 
   //Record creation
   createField: async (payload) => {
-    const {Title } = payload;
+    const { Title } = payload;
     const result = await fileModel.checkTitleExist(payload);
     const existingFile = await file.findOne({ Title }, { __v: 0 }).lean();
     return existingFile;
@@ -158,8 +159,8 @@ const fileModel = {
     const skip = (page - 1) * limit;
     const query = searchTerm
       ? {
-          Title: { $regex: searchTerm, $options: "i" },
-        }
+        Title: { $regex: searchTerm, $options: "i" },
+      }
       : {};
 
     const [results, totalCount] = await Promise.all([
@@ -175,6 +176,32 @@ const fileModel = {
     const { Title } = payload;
     return await file.findOne({ Title }, { __v: 0 }).lean();
   },
-};
+
+
+  confNameFilter: async () => {
+    const confname = new Set();
+    const filtered = await file.find();
+    for (let item of filtered) {
+      if (item.Conference[0].Conference_Name) {
+        confname.add(item.Conference[0].Conference_Name);
+      }
+    }
+    return confname;
+  },
+
+  confNameUpload: async (name, page, limit) => {
+    const skip = (page - 1) * limit;
+    const [response, totalCount] = await Promise.all([file.find({ "Conference.Conference_Name": `${name}` }, { __v: 0 })
+    .skip(skip).limit(limit).lean(), file.countDocuments({"Conference.Conference_Name":`${name}`})]);
+    return { response, totalCount };
+  },
+
+  confCmdUpload: async (cmd, page, limit) => {
+    const skip = (page-1)*limit;
+    const [response,totalCount] = await Promise.all([file.find({ "Conference.Decision_With_Comments": `${cmd}` }, { __v: 0 })
+    .skip(skip).limit(limit).lean(),file.countDocuments({"Conference.Decision_With_Comments":`${cmd}`})]);
+    return {response,totalCount};
+  }
+}
 
 module.exports = fileModel;
