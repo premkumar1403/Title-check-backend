@@ -3,106 +3,144 @@ const fileModel = require("../model/file.model");
 
 const fileController = {
   createFile: async (req, res) => {
-    const file = req.file.buffer;
-    const page_num = parseInt(req.query.page) || 1;
+  const file = req.file.buffer;
+  const page_num = parseInt(req.query.page) || 1;
+  const paginated = req.query.paginated || false; 
 
-    // Pre-compiled regex patterns for better performance
-    // const spaceRegex = /\s+/g;
-    // const punctuationRegex = /[-'"/=.,:;]/g;
+  
+  // const spaceRegex = /\s+/g;
+  // const punctuationRegex = /[-'"/=.,:;]/g;
 
-    function normalizeTitle(title, item) {
-      if (!title) return;
-      // if (!title || typeof title !== "string") {
-      //   return res.status(400).json({
-      //     Paper_ID: item.Paper_ID,
-      //     success: false,
-      //     message: "All fields must have valid data!",
-      //   });
-      // }
-      return title
-        .toLowerCase()
-        .replace(/[-''"/=.,:;]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
+  function normalizeTitle(title, item) {
+    if (!title) return;
+    // if (!title || typeof title !== "string") {
+    //   return res.status(400).json({
+    //     Paper_ID: item.Paper_ID,
+    //     success: false,
+    //     message: "All fields must have valid data!",
+    //   });
+    // }
+    return title
+      .toLowerCase()
+      .replace(/[-''"/=.,:;]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
-    function normalizeAuthor(author, item) {
-      if (!author) return;
-      // if (!author || typeof author !== "string") {
-      //   return res.status(400).json({
-      //     Paper_ID: item.Paper_ID,
-      //     success: false,
-      //     message: "All fields must have valid data!",
-      //   });
-      // }
-      return author
-        .toLowerCase()
-        .replace(/[-''"/=.,:;]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
+  function normalizeAuthor(author, item) {
+    if (!author) return;
+    // if (!author || typeof author !== "string") {
+    //   return res.status(400).json({
+    //     Paper_ID: item.Paper_ID,
+    //     success: false,
+    //     message: "All fields must have valid data!",
+    //   });
+    // }
+    return author
+      .toLowerCase()
+      .replace(/[-''"/=.,:;]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
-    function normalizeName(name, item) {
-      if (!name) return;
-      // if (!name || typeof name !== "string") {
-      //   return res.status(400).json({
-      //     Paper_ID: item.Paper_ID,
-      //     success: false,
-      //     message: "All fields must have valid data!",
-      //   });
-      // }
-      return name
-        .toLowerCase()
-        .replace(/[-''"/=.,:;]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
+  function normalizeName(name, item) {
+    if (!name) return;
+    // if (!name || typeof name !== "string") {
+    //   return res.status(400).json({
+    //     Paper_ID: item.Paper_ID,
+    //     success: false,
+    //     message: "All fields must have valid data!",
+    //   });
+    // }
+    return name
+      .toLowerCase()
+      .replace(/[-''"/=.,:;]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
-    function normalizeCmd(cmd, item) {
-      if (!cmd) return;
-      // if (!cmd || typeof cmd !== "string") {
-      //   return res.status(400).json({
-      //     Paper_ID: item.Paper_ID,
-      //     success: false,
-      //     message: "All fields must have valid data!",
-      //   });
-      // }
-      return cmd
-        .toLowerCase()
-        .replace(/[-''"/=.,:;]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
+  function normalizeCmd(cmd, item) {
+    if (!cmd) return;
+    // if (!cmd || typeof cmd !== "string") {
+    //   return res.status(400).json({
+    //     Paper_ID: item.Paper_ID,
+    //     success: false,
+    //     message: "All fields must have valid data!",
+    //   });
+    // }
+    return cmd
+      .toLowerCase()
+      .replace(/[-''"/=.,:;]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
-    function normalizePrecheck(precheck) {
-      if (!precheck) return "";
-      return precheck
-        .toLowerCase()
-        .replace(/[-''"/=.,:;]/g, " ")
-        .replace(/\s+/g, " ") 
-        .trim();
-    }
+  function normalizePrecheck(precheck) {
+    if (!precheck) return "";
+    return precheck
+      .toLowerCase()
+      .replace(/[-''"/=.,:;]/g, " ")
+      .replace(/\s+/g, " ") 
+      .trim();
+  }
 
-    function normalizeFirstset(firstset) {
-      if (!firstset) return "";
-      return firstset
-        .toLowerCase()
-        .replace(/[-''"/=.,:;]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
+  function normalizeFirstset(firstset) {
+    if (!firstset) return "";
+    return firstset
+      .toLowerCase()
+      .replace(/[-''"/=.,:;]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
-    try {
-      const workbook = XLSX.read(file, { type: "buffer" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const data = XLSX.utils.sheet_to_json(worksheet, { header: 0 });
+  // Helper function to process a batch of items
+  async function processBatch(items, processedTitles = new Set()) {
+    const batchPromises = items.map(async (item) => {
+      try {
+        const payload = {
+          Title: normalizeTitle(item.Title, item),
+          Author_Mail: normalizeAuthor(item.Author_Mail, item),
+          Conference_Name: normalizeName(item.Conference_Name, item),
+          Decision_With_Comments: normalizeCmd(
+            item.Decision_With_Comments,
+            item
+          ),
+          Precheck_Comments: normalizePrecheck(item.Precheck_Comments),
+          Firstset_Comments: normalizeFirstset(item.Firstset_Comments),
+        };
+        
+        const result = await fileModel.createField(payload);
 
-      if (!data || data.length === 0) {
-        return res.status(400).json({ message: "No data found in file!" });
+        // Only add to response if title hasn't been processed yet
+        if (result && !processedTitles.has(result.Title)) {
+          processedTitles.add(result.Title);
+          return result;
+        }
+        return null;
+      } catch (error) {
+        console.log("error uploading files!" + error);
+        return null;
       }
+    });
 
-      // Calculate pagination first
+    const batchResults = await Promise.all(batchPromises);
+    return batchResults.filter((result) => result !== null);
+  }
+
+  try {
+    const workbook = XLSX.read(file, { type: "buffer" });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 0 });
+
+    if (!data || data.length === 0) {
+      return res.status(400).json({ message: "No data found in file!" });
+    }
+
+    const processedTitles = new Set(); // Track processed titles to avoid duplicates
+
+    if (paginated) {
+      // PAGINATED RESPONSE
       const page_size = 25;
       const start_index = (page_num - 1) * page_size;
       const end_index = start_index + page_size;
@@ -110,82 +148,63 @@ const fileController = {
 
       // Only process the data needed for current page
       const pageData = data.slice(start_index, end_index);
-      const response = [];
-      const processedTitles = new Set(); // Track processed titles to avoid duplicates
+      const response = await processBatch(pageData, processedTitles);
 
-      // Process only current page data
-      const batchPromises = pageData.map(async (item) => {
-        try {
-          const payload = {
-            Title: normalizeTitle(item.Title, item),
-            Author_Mail: normalizeAuthor(item.Author_Mail, item),
-            Conference_Name: normalizeName(item.Conference_Name, item),
-            Decision_With_Comments: normalizeCmd(
-              item.Decision_With_Comments,
-              item
-            ),
-            Precheck_Comments: normalizePrecheck(item.Precheck_Comments),
-            Firstset_Comments: normalizeFirstset(item.Firstset_Comments),
-          };
-          
-          const result = await fileModel.createField(payload);
-
-          // Only add to response if title hasn't been processed yet
-          if (result && !processedTitles.has(result.Title)) {
-            processedTitles.add(result.Title);
-            return result;
-          }
-          return null;
-        } catch (error) {
-          console.log("error uploading files!" + error);
-          return null;
-        }
-      });
-
-      const batchResults = await Promise.all(batchPromises);
-      response.push(...batchResults.filter((result) => result !== null));
-
-      // Process remaining data in background (fire and forget)
+      // Process remaining data in background (fire and forget) only for first page
       if (page_num === 1 && data.length > page_size) {
         setImmediate(async () => {
           const remainingData = data.slice(page_size);
           const batchSize = 50;
+          const backgroundProcessedTitles = new Set(processedTitles);
 
           for (let i = 0; i < remainingData.length; i += batchSize) {
             const batch = remainingData.slice(i, i + batchSize);
-            const backgroundPromises = batch.map(async (item) => {
-              try {
-                const payload = {
-                  Title: normalizeTitle(item.Title, item),
-                  Author_Mail: normalizeAuthor(item.Author_Mail, item),
-                  Conference_Name: normalizeName(item.Conference_Name, item),
-                  Decision_With_Comments: normalizeCmd(
-                    item.Decision_With_Comments,
-                    item
-                  ),
-                  Precheck_Comments: normalizePrecheck(item.Precheck_Comments),
-                  Firstset_Comments: normalizeFirstset(item.Firstset_Comments),
-                };
-                return await fileModel.createField(payload);
-              } catch (error) {
-                console.log("background processing error: " + error);
-                return null;
-              }
-            });
-            await Promise.all(backgroundPromises);
+            try {
+              await processBatch(batch, backgroundProcessedTitles);
+            } catch (error) {
+              console.log("background processing error: " + error);
+            }
           }
         });
       }
+
       return res.status(201).json({
+        paginated: true,
         page: page_num,
+        page_size,
+        total_records: data.length,
         total_page,
+        current_page_records: response.length,
         response: response,
         message: "file uploaded to database successfully!",
       });
-    } catch (error) {
-      return res.status(500).json({ message: "Internal server error!" });
+
+    } else {
+      // NON-PAGINATED RESPONSE - Process all data
+      const batchSize = 50;
+      const allResults = [];
+
+      // Process all data in batches to avoid memory issues
+      for (let i = 0; i < data.length; i += batchSize) {
+        const batch = data.slice(i, i + batchSize);
+        const batchResults = await processBatch(batch, processedTitles);
+        allResults.push(...batchResults);
+      }
+
+      return res.status(201).json({
+        paginated: false,
+        total_records: data.length,
+        processed_records: allResults.length,
+        response: allResults,
+        message: "file uploaded to database successfully!",
+      });
     }
-  },
+
+  } catch (error) {
+    console.log("Error processing file: " + error);
+    return res.status(500).json({ message: "Internal server error!" });
+  }
+},
 
   //with pagination title query
   getFile: async (req, res) => {
